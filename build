@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+MIX_ENV=prod mix release prod --overwrite --force
+#MIX_ENV=dev mix release dev --overwrite --force
+
+echo $APP_HOST
+export PHX_SERVER="true"
+export RELEASE_NAME="cool_release"
+export PHX_HOST=$APP_HOST
+export SECRET_KEY_BASE="$(mix phx.gen.secret)"
+export DATABASE_URL="postgres://postgres:postgres@localhost:5432/dave_dev"
+export PORT=80
+
+#_build/dev/rel/dev/bin/dev start_iex
+#sudo --preserve-env _build/prod/rel/prod/bin/prod start_iex
+
+tar -czvf release.tar _build/prod/rel/prod
+scp release.tar berners@dave:~/
+scp deploy berners@dave:~/
+
+#pid=$!
+#echo started with pid $pid
