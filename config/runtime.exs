@@ -50,17 +50,25 @@ if config_env() == :prod do
 
   host = System.get_env("PHX_HOST") || "example.com"
 
-  port = String.to_integer(System.get_env("PORT") || "4000")
+  http_port = String.to_integer(System.get_env("HTTP_PORT") || "4000")
+  https_port = String.to_integer(System.get_env("HTTPS_PORT") || "4443")
 
   config :dave, DaveWeb.Endpoint,
-    url: [host: host, port: 443],
+    url: [host: host, port: https_port],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
       # See the documentation on https://hexdocs.pm/plug_cowboy/Plug.Cowboy.html
       # for details about using IPv6 vs IPv4 and loopback vs public addresses.
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
-      port: port
+      port: http_port
+    ],
+    https: [
+      port: https_port,
+      keyfile:
+        System.get_env("SSL_KEY_PATH") || raise("No SSL_KEY_PATH environment variable set"),
+      certfile:
+        System.get_env("SSL_CERT_PATH") || raise("No SSL_CERT_PATH environment variable set")
     ],
     secret_key_base: secret_key_base
 

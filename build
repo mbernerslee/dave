@@ -1,23 +1,29 @@
 #!/bin/bash
 set -e
 
+export STUPID_INSECURE_MODE="true"
 MIX_ENV=prod mix release prod --overwrite --force
-#MIX_ENV=dev mix release dev --overwrite --force
 
-echo $APP_HOST
 export PHX_SERVER="true"
 export RELEASE_NAME="cool_release"
-export PHX_HOST=$APP_HOST
 export SECRET_KEY_BASE="$(mix phx.gen.secret)"
 export DATABASE_URL="postgres://postgres:postgres@localhost:5432/dave_dev"
-export PORT=80
+export HTTP_PORT=4000
+export HTTPS_PORT=4443
+export SSL_CERT_PATH="priv/cert/selfsigned.pem"
+export SSL_KEY_PATH="priv/cert/selfsigned_key.pem"
+echo $APP_HOST
+export PHX_HOST="$APP_HOST:$HTTPS_PORT"
+#export PHX_HOST=$APP_HOST
+echo $PHX_HOST
 
-#_build/dev/rel/dev/bin/dev start_iex
-#sudo --preserve-env _build/prod/rel/prod/bin/prod start_iex
+if [[ "$1" == "-r" ]]; then
+  _build/prod/rel/prod/bin/prod start 2> log_file 1> log_file &
+fi
 
-tar -czvf release.tar _build/prod/rel/prod
-scp release.tar berners@dave:~/
-scp deploy berners@dave:~/
+if [[ "$1" == "-d" ]]; then
+  tar -czvf release.tar _build/prod/rel/prod
+  scp release.tar berners@dave:~/
+  scp deploy berners@dave:~/
+fi
 
-#pid=$!
-#echo started with pid $pid

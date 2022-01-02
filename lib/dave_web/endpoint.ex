@@ -45,6 +45,7 @@ defmodule DaveWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
+  plug Plug.SSL
   plug Plug.Session, @session_options
   plug DaveWeb.Router
 end
