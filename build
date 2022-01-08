@@ -1,11 +1,10 @@
 #!/bin/bash
 set -e
 
-export STUPID_INSECURE_MODE="true"
 MIX_ENV=prod mix release prod --overwrite --force
 
 export PHX_SERVER="true"
-export RELEASE_NAME="cool_release"
+#export RELEASE_NAME="cool_release"
 export SECRET_KEY_BASE="$(mix phx.gen.secret)"
 export DATABASE_URL="postgres://postgres:postgres@localhost:5432/dave_dev"
 export HTTP_PORT=4000
@@ -19,6 +18,7 @@ echo $PHX_HOST
 
 if [[ "$1" == "-r" ]]; then
   _build/prod/rel/prod/bin/prod start 2> log_file 1> log_file &
+  echo "Running with pid $!"
 fi
 
 if [[ "$1" == "-d" ]]; then

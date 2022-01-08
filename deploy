@@ -5,9 +5,8 @@ sudo echo "a prompt for sudo"
 _build/prod/rel/prod/bin/prod stop > /dev/null 2>&1
 tar -xvf release.tar
 
-export STUPID_INSECURE_MODE="true"
 export PHX_SERVER="true"
-export RELEASE_NAME="cool_release"
+#export RELEASE_NAME="cool_release"
 export SECRET_KEY_BASE="GtNMPplTGjhEVVBu0/dagB9xeiJvqApKExtqgdacvgWLNibJTyirlD5gMLN+i1/C"
 export DATABASE_URL="postgres://postgres:postgres@localhost:5432/dave_dev"
 export HTTP_PORT=80
