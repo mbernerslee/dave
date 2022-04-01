@@ -11,10 +11,10 @@ export HTTP_PORT=4000
 export HTTPS_PORT=4443
 export SSL_CERT_PATH="priv/cert/selfsigned.pem"
 export SSL_KEY_PATH="priv/cert/selfsigned_key.pem"
-echo $APP_HOST
+#echo $APP_HOST
 export PHX_HOST="$APP_HOST:$HTTPS_PORT"
 #export PHX_HOST=$APP_HOST
-echo $PHX_HOST
+#echo $PHX_HOST
 
 if [[ "$1" == "-r" ]]; then
   _build/prod/rel/prod/bin/prod start 2> log_file 1> log_file &
@@ -26,4 +26,3 @@ if [[ "$1" == "-d" ]]; then
   scp release.tar berners@dave:~/
   scp deploy berners@dave:~/
 fi
-

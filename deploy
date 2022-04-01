@@ -16,4 +16,5 @@ export SSL_KEY_PATH="/etc/letsencrypt/live/berners.dev/privkey.pem"
 export APP_HOST="berners.dev"
 export PHX_HOST=$APP_HOST
 
-sudo --preserve-env _build/prod/rel/prod/bin/prod start 2> log_file 1> log_file &
+sudo --preserve-env _build/prod/rel/prod/bin/prod start >> log_file 2>&1 &
+echo $?
