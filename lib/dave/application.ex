@@ -1,4 +1,5 @@
 defmodule Dave.Application do
+  alias Dave.WebServerLogReader
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -10,7 +11,8 @@ defmodule Dave.Application do
     mandatory_children = [
       DaveWeb.Telemetry,
       {Phoenix.PubSub, name: Dave.PubSub},
-      DaveWeb.Endpoint
+      DaveWeb.Endpoint,
+      WebServerLogReader.child_spec()
     ]
 
     optional_children = if use_the_database?(), do: [Dave.Repo], else: []

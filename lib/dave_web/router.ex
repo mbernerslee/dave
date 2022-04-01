@@ -17,7 +17,7 @@ defmodule DaveWeb.Router do
   scope "/", DaveWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    live "/", WebServerLogStatisticsLive, :show
   end
 
   # Other scopes may use custom stacks.

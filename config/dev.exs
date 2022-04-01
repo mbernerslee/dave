@@ -15,10 +15,22 @@ config :dave, Dave.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we use it
 # with esbuild to bundle .js and .css sources.
+host = System.get_env("APP_HOST", "localhost")
+https_port = String.to_integer(System.get_env("HTTPS_PORT", "4443"))
+
 config :dave, DaveWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {0, 0, 0, 0}, port: String.to_integer(System.get_env("HTTP_PORT") || "4000")],
+  http: [ip: {0, 0, 0, 0}, port: String.to_integer(System.get_env("HTTP_PORT", "4000"))],
+  https: [
+    ip: {0, 0, 0, 0},
+    port: https_port,
+    cipher_suite: :strong,
+    keyfile: "priv/cert/selfsigned_key.pem",
+    certfile: "priv/cert/selfsigned.pem"
+  ],
+  url: [host: host],
+  force_ssl: [host: "#{host}:#{https_port}"],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,

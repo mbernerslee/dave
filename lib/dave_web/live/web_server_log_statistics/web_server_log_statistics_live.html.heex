@@ -1,0 +1,53 @@
+<h1>Hey Dude</h1>
+<p>
+  This is a really simple website. The only legitimate route that exists on it is '/'.
+</p>
+<p>
+  Therefore if anybody has requested anything other than '/', then our options are
+  <ul>
+    <li>
+      Someone manually typed a URL into their browser (but why, there's no other page?)
+    </li>
+    <li>
+      An evil (or maybe neutral or friendly) robot tried to probe the site for reasons only known to the robot and it's handler
+    </li>
+  </ul>
+</p>
+<p>
+  Below we have a list of all the requests ever. Check out all of the evil that the internet has tried to do...
+</p>
+<table>
+  <th>
+    HTTP Method
+  </th>
+  <th>
+    Request
+  </th>
+  <th>
+    Hits
+  </th>
+  <tr>
+    <td>
+      -
+    </td>
+    <td>
+      -
+    </td>
+    <td>
+      <%= @web_requests |> Enum.map(&(&1.count)) |> Enum.sum() %> (total)
+    </td>
+  </tr>
+  <%= for %{http_verb: http_verb, request_path: request_path, count: count} <- @web_requests do %>
+  <tr>
+    <td>
+      <%= http_verb %>
+    </td>
+    <td>
+      <%= request_path %>
+    </td>
+    <td>
+      <%= count %>
+    </td>
+  </tr>
+  <% end %>
+</table>

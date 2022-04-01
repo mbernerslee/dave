@@ -1,7 +1,6 @@
 #!/bin/bash
 
 sudo echo "a prompt for sudo"
-#_build/prod/rel/prod/bin/prod stop > /dev/null 2>&1
 _build/prod/rel/prod/bin/prod stop > /dev/null 2>&1
 tar -xvf release.tar
 

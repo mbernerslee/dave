@@ -19,6 +19,8 @@ use_the_db =
 
 config :dave, Dave.Repo, use_it: use_the_db
 
+config :dave, :web_server_log_file, location: "./log_file"
+
 # Configures the endpoint
 config :dave, DaveWeb.Endpoint,
   url: [host: System.get_env("APP_HOST", "localhost")],
