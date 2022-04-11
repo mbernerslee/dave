@@ -1,2 +1,57 @@
 #!/bin/bash
 
+. .secrets.env
+
+function install_postgres() {
+  whereis postgres >/dev/null
+
+  if [ $? -ne 0 ]; then
+    sudo apt -y update
+    sudo apt install -y wget curl ca-certificates gnupg
+
+    repo_source="deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main"
+    apt_file="/etc/apt/sources.list.d/pgdg.list"
+
+    grep "$repo_source" "$apt_file" >/dev/null
+
+    if [ $? -ne 0 ]; then
+      sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+      wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+    fi
+
+    sudo apt -y update
+    sudo apt install -y postgresql-14
+  else
+    echo "postgres already installed"
+  fi
+}
+
+function configure_postgres() {
+  user=`whoami`
+  echo "psql -c \"\\du\"" | sudo su postgres | grep $user >/dev/null
+  if [ $? -ne 0 ]; then
+    sudo su postgres -c "createuser --superuser $user"
+    sudo service postgresql start
+    sudo sed -i -e 's/jit = on/jit = off/g' /etc/postgresql/14/main/postgresql.conf
+  else
+    echo "postgres already configured"
+  fi
+}
+
+function create_database() {
+  db_name="dave"
+  psql -c "select datname from pg_database where datname = '$db_name'" | grep "$db_name" >/dev/null
+
+  if [ $? -eq 0 ]; then
+    echo "postgres already has the database $db_name"
+  else
+    echo "need to create database $db_name"
+    psql postgres -c "create database $db_name"
+    psql postgres -c "create user $db_user with encrypted password '$db_password';"
+    psql postgres -c "grant all privileges on database $db_name to $db_user;"
+  fi
+}
+
+install_postgres
+configure_postgres
+create_database

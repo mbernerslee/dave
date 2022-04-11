@@ -36,3 +36,4 @@ npm-debug.log
 
 release.*
 log_file
+.secrets.env
