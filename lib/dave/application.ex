@@ -12,23 +12,14 @@ defmodule Dave.Application do
       DaveWeb.Telemetry,
       {Phoenix.PubSub, name: Dave.PubSub},
       DaveWeb.Endpoint,
-      WebServerLogReader.child_spec()
+      WebServerLogReader.child_spec(),
+      Dave.Repo
     ]
-
-    optional_children = if use_the_database?(), do: [Dave.Repo], else: []
-
-    children = mandatory_children ++ optional_children
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Dave.Supervisor]
-    Supervisor.start_link(children, opts)
-  end
-
-  defp use_the_database? do
-    :dave
-    |> Application.get_env(Dave.Repo)
-    |> Keyword.fetch!(:use_it)
+    Supervisor.start_link(mandatory_children, opts)
   end
 
   # Tell Phoenix to update the endpoint configuration

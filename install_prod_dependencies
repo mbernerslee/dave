@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 . .secrets.env
 
@@ -39,16 +40,16 @@ function configure_postgres() {
 }
 
 function create_database() {
-  db_name="dave"
-  psql -c "select datname from pg_database where datname = '$db_name'" | grep "$db_name" >/dev/null
+  DB_NAME="dave"
+  psql -c "select datname from pg_database where datname = '$DB_NAME'" | grep "$DB_NAME" >/dev/null
 
   if [ $? -eq 0 ]; then
-    echo "postgres already has the database $db_name"
+    echo "postgres already has the database $DB_NAME"
   else
-    echo "need to create database $db_name"
-    psql postgres -c "create database $db_name"
-    psql postgres -c "create user $db_user with encrypted password '$db_password';"
-    psql postgres -c "grant all privileges on database $db_name to $db_user;"
+    echo "need to create database $DB_NAME"
+    psql postgres -c "create database $DB_NAME"
+    psql postgres -c "create user $DB_USER with encrypted password '$DB_PASSWORD';"
+    psql postgres -c "grant all privileges on database $DB_NAME to $DB_USER;"
   fi
 }
 
