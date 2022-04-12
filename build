@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+mix test
 MIX_ENV=prod mix release prod --overwrite --force
 
 if [[ "$1" == "-r" ]]; then
@@ -10,5 +11,5 @@ fi
 
 if [[ "$1" == "-d" ]]; then
   tar -czvf release.tar _build/prod/rel/prod
-  scp release.tar deploy .secrets.env berners@dave:~/
+  scp release.tar run_on_prod .secrets.env berners@dave:~/
 fi

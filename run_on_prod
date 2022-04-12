@@ -1,20 +1,19 @@
 #!/bin/bash
+set -e
 
 set -a
 . .secrets.env
 set +a
-
-sudo echo "a prompt for sudo"
-_build/prod/rel/prod/bin/prod stop > /dev/null 2>&1
-tar -xvf release.tar
 
 export PHX_SERVER="true"
 export DATABASE_URL="postgres://$DB_USER:$DB_PASSWORD@localhost:5432/dave"
 export HTTP_PORT=80
 export HTTPS_PORT=443
 
-echo $DATABASE_URL
+sudo echo "a prompt for sudo"
+_build/prod/rel/prod/bin/prod stop > /dev/null 2>&1
+tar -xvf release.tar
 
-#sudo --preserve-env _build/prod/rel/prod/bin/prod eval "Dave.Release.migrate"
+sudo --preserve-env _build/prod/rel/prod/bin/prod eval "Dave.Release.migrate"
 sudo --preserve-env _build/prod/rel/prod/bin/prod start >> log_file 2>&1 &
 echo $?
