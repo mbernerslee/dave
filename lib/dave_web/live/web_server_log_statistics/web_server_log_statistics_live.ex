@@ -3,6 +3,7 @@ defmodule DaveWeb.WebServerLogStatisticsLive do
   alias Dave.WebServerLogReader
 
   def mount(_, _, socket) do
+    IO.inspect("hit it!")
     web_requests = parse(WebServerLogReader.read())
 
     socket = assign(socket, :web_requests, web_requests)

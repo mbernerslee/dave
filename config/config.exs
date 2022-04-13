@@ -7,17 +7,7 @@
 # General application configuration
 import Config
 
-config :dave,
-  ecto_repos: [Dave.Repo]
-
-use_the_db =
-  if System.get_env("USE_THE_DB") do
-    System.get_env("USE_THE_DB") == "true"
-  else
-    true
-  end
-
-config :dave, Dave.Repo, use_it: use_the_db
+config :dave, ecto_repos: [Dave.Repo]
 
 config :dave, :web_server_log_file, location: "./log_file"
 

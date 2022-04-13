@@ -17,11 +17,12 @@ config :dave, Dave.Repo,
 # with esbuild to bundle .js and .css sources.
 host = System.get_env("APP_HOST", "localhost")
 https_port = String.to_integer(System.get_env("HTTPS_PORT", "4443"))
+http_port = String.to_integer(System.get_env("HTTP_PORT", "4000"))
 
 config :dave, DaveWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {0, 0, 0, 0}, port: String.to_integer(System.get_env("HTTP_PORT", "4000"))],
+  http: [ip: {0, 0, 0, 0}, port: http_port],
   https: [
     ip: {0, 0, 0, 0},
     port: https_port,
