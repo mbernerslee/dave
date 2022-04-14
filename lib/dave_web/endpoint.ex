@@ -10,7 +10,6 @@ defmodule DaveWeb.Endpoint do
     signing_salt: "9Gc9azOg"
   ]
 
-  plug DaveWeb.Plugs.Inspector
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
@@ -46,7 +45,10 @@ defmodule DaveWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
+  # plug DaveWeb.Plugs.Inspector
+  # Plug SSL redirects me to example.com in MIX_ENV=test !!
   plug Plug.SSL
+  plug DaveWeb.Plugs.Inspector
   plug Plug.Session, @session_options
   plug DaveWeb.Router
 end

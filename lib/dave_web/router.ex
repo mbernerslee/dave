@@ -3,16 +3,15 @@ defmodule DaveWeb.Router do
   alias DaveWeb.Plugs.{IncomingWebRequestPersister, Inspector}
 
   pipeline :browser do
-    # plug Inspector
-    # plug :accepts, ["html"]
-    # plug :fetch_session
-    # plug :fetch_live_flash
-    # plug Inspector
-    # plug :put_root_layout, {DaveWeb.LayoutView, :root}
-    # plug :protect_from_forgery
-    # plug :put_secure_browser_headers
-    # plug IncomingWebRequestPersister
-    plug Asshole
+    plug Inspector
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug Inspector
+    plug :put_root_layout, {DaveWeb.LayoutView, :root}
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+    plug IncomingWebRequestPersister
   end
 
   pipeline :api do
