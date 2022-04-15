@@ -6,8 +6,12 @@ defmodule Dave.IncomingWebRequestBuilder do
     %{path: unique_path(), http_method: Enum.random(Constants.http_methods())}
   end
 
-  defp unique_path_name do
-    Internet.slug() <> "-" <> to_string(System.unique_integer([:positive]))
+  def unique_path do
+    depth = Enum.random(0..4)
+
+    Enum.reduce(1..depth, unique_path_section(), fn _, acc ->
+      acc <> unique_path_section()
+    end)
   end
 
   def with_path(incoming_web_request, path) do
@@ -44,15 +48,11 @@ defmodule Dave.IncomingWebRequestBuilder do
     returning
   end
 
-  def unique_path do
-    depth = Enum.random(0..4)
-
-    Enum.reduce(1..depth, unique_path_section(), fn _, acc ->
-      acc <> unique_path_section()
-    end)
-  end
-
   defp unique_path_section do
     "/" <> unique_path_name()
+  end
+
+  defp unique_path_name do
+    Internet.slug() <> "-" <> to_string(System.unique_integer([:positive]))
   end
 end

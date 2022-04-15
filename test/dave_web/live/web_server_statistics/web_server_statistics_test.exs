@@ -1,10 +1,10 @@
 defmodule DaveWeb.WebServerStatisticsLiveTest do
   use DaveWeb.ConnCase, async: false
   import Phoenix.LiveViewTest
-  alias Dave.{Constants, IncomingWebRequestBuilder, IncomingWebRequestHandler}
+  alias Dave.{Constants, IncomingWebRequestBuilder, IncomingWebRequestHandlerStateBuilder}
+  alias Dave.IncomingWebRequestPubSub
   alias DaveWeb.Endpoint
 
-  # TODO rename the log stats module (this one)
   test "can render the page", %{conn: conn} do
     assert {:ok, _view, _html} = live(conn, path())
   end
@@ -21,11 +21,14 @@ defmodule DaveWeb.WebServerStatisticsLiveTest do
            |> Floki.text()
            |> Kernel.=~(path)
 
-    # TODO split subscribing & broadcasting out of there into separate module
-    # TODO make a builder for the server state of Handler
-    IncomingWebRequestHandler.broadcast(%{
-      %{"http_method" => http_method, "path" => path} => 1
-    })
+    web_requests =
+      IncomingWebRequestHandlerStateBuilder.build()
+      |> IncomingWebRequestHandlerStateBuilder.add_incident_with_path_and_http_method(
+        path,
+        http_method
+      )
+
+    IncomingWebRequestPubSub.broadcast(web_requests)
 
     assert view
            |> render()

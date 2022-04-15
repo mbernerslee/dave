@@ -13,7 +13,6 @@ defmodule Dave.Application do
       {Phoenix.PubSub, name: Dave.PubSub},
       DaveWeb.Endpoint,
       Dave.Repo,
-      # TODO rename stuff to shorter names... e.g. don't say incoming all the time etc etc
       IncomingWebRequestHandler.child_spec()
     ]
 

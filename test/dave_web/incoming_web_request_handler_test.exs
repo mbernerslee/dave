@@ -113,7 +113,7 @@ defmodule Dave.IncomingWebRequestHandlerTest do
 
       assert IncomingWebRequestHandler.handle_request(pid, path, http_method) == :ok
 
-      assert_received {:web_requests, %{%{"http_method" => ^http_method, "path" => ^path} => 1}}
+      assert_receive {:web_requests, %{%{"http_method" => ^http_method, "path" => ^path} => 1}}
     end
   end
 end

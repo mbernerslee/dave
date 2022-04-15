@@ -2,8 +2,10 @@
 set -e
 
 find_todos() {
+  set +e
   find_result=$(git grep TODO -- './*' ':!build' ':!.credo.exs')
   result=$?
+  set -e
   if [ $result -eq 0 ]; then
     echo "TODO found in:"
     echo "$find_result" | while read -r res; do echo " - $res"; done

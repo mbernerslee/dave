@@ -8,13 +8,11 @@ defmodule DaveWeb.Plugs.IncomingWebRequestLogger do
   end
 
   def call(conn, handler_pid_or_name) do
-    # TODO make this a cast so that we don't slow down every request?
-    :ok =
-      IncomingWebRequestHandler.handle_request(
-        handler_pid_or_name,
-        conn.request_path,
-        conn.method
-      )
+    IncomingWebRequestHandler.handle_request(
+      handler_pid_or_name,
+      conn.request_path,
+      conn.method
+    )
 
     conn
   end

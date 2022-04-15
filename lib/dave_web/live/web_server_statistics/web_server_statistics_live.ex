@@ -1,11 +1,11 @@
 defmodule DaveWeb.WebServerStatisticsLive do
   use DaveWeb, :live_view
   alias Dave.IncomingWebRequestHandler
+  alias Dave.IncomingWebRequestPubSub
 
-  # TODO rename this module
   def mount(_, _, socket) do
     if connected?(socket) do
-      IncomingWebRequestHandler.subscribe()
+      IncomingWebRequestPubSub.subscribe()
     end
 
     web_requests = parse(IncomingWebRequestHandler.read())
