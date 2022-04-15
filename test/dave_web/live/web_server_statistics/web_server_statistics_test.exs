@@ -1,4 +1,4 @@
-defmodule DaveWeb.WebServerLogStatisticsLiveTest do
+defmodule DaveWeb.WebServerStatisticsLiveTest do
   use DaveWeb.ConnCase, async: false
   import Phoenix.LiveViewTest
   alias Dave.{Constants, IncomingWebRequestBuilder, IncomingWebRequestHandler}
@@ -39,6 +39,6 @@ defmodule DaveWeb.WebServerLogStatisticsLiveTest do
   end
 
   defp path do
-    Routes.web_server_log_statistics_path(Endpoint, :show)
+    Routes.web_server_statistics_path(Endpoint, :show)
   end
 end

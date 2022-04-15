@@ -51,6 +51,6 @@ defmodule DaveWeb.Plugs.IncomingWebRequestLoggerTest do
   end
 
   defp arbitrary_existant_path do
-    Routes.web_server_log_statistics_path(Endpoint, :show)
+    Routes.web_server_statistics_path(Endpoint, :show)
   end
 end

@@ -1,4 +1,4 @@
-defmodule DaveWeb.WebServerLogStatisticsLive do
+defmodule DaveWeb.WebServerStatisticsLive do
   use DaveWeb, :live_view
   alias Dave.IncomingWebRequestHandler
 
