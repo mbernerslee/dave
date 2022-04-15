@@ -1,4 +1,5 @@
 defmodule PopulateWebRequestTables do
+  import Ecto.Query
   alias Dave.Repo
 
   # c "#{:code.priv_dir(:dave)}/scripts/populate_web_request_tables.exs"
@@ -23,14 +24,32 @@ defmodule PopulateWebRequestTables do
         end
       end)
       |> Enum.each(fn {%{"http_verb" => http_verb, "request_path" => request_path}, count} ->
-        {1, [%{id: incoming_web_request_id}]} =
-          Repo.insert_all(
-            "incoming_web_requests",
-            [
-              %{http_method: http_verb, path: request_path, inserted_at: now, updated_at: now}
-            ],
-            returning: [:id]
-          )
+        incoming_web_request_id =
+          case Repo.one(
+                 from i in "incoming_web_requests",
+                   where: i.http_method == ^http_verb and i.path == ^request_path,
+                   select: i.id
+               ) do
+            nil ->
+              {1, [%{id: incoming_web_request_id}]} =
+                Repo.insert_all(
+                  "incoming_web_requests",
+                  [
+                    %{
+                      http_method: http_verb,
+                      path: request_path,
+                      inserted_at: now,
+                      updated_at: now
+                    }
+                  ],
+                  returning: [:id]
+                )
+
+              incoming_web_request_id
+
+            incoming_web_request_id ->
+              incoming_web_request_id
+          end
 
         Enum.each(1..count, fn _ ->
           Repo.insert_all("incoming_web_request_incidents", [

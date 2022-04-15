@@ -13,6 +13,7 @@ defmodule Dave.MixProject do
       deps: deps(),
       releases: [
         prod: [
+          validate_compile_env: false,
           include_executables_for: [:unix]
         ],
         dev: [
