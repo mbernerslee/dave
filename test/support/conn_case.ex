@@ -31,9 +31,17 @@ defmodule DaveWeb.ConnCase do
     end
   end
 
+  @host Application.compile_env(:dave, DaveWeb.Endpoint)[:url][:host]
+
   setup tags do
     pid = Ecto.Adapters.SQL.Sandbox.start_owner!(Dave.Repo, shared: not tags[:async])
     on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
-    {:ok, conn: Phoenix.ConnTest.build_conn()}
+
+    # set the "host" for the request properly, so that Plug.SSL can be told to exclude forcing HTTPS upgrade in test mode only
+    # see config :dave, Endpoint - force_ssl exlucde in config/config.exs vs config/test.exs
+    # this stops enforcing HTTPS but only in the test env, and only for @host
+    conn = %{Phoenix.ConnTest.build_conn() | host: @host}
+
+    {:ok, conn: conn}
   end
 end

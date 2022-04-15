@@ -1,22 +1,32 @@
 defmodule DaveWeb.WebServerLogStatisticsLive do
   use DaveWeb, :live_view
-  alias Dave.WebServerLogReader
+  alias Dave.IncomingWebRequestHandler
 
+  # TODO rename this module
   def mount(_, _, socket) do
-    IO.inspect("hit it!")
-    web_requests = parse(WebServerLogReader.read())
+    if connected?(socket) do
+      IncomingWebRequestHandler.subscribe()
+    end
+
+    web_requests = parse(IncomingWebRequestHandler.read())
 
     socket = assign(socket, :web_requests, web_requests)
     {:ok, socket}
   end
 
-  def parse(web_requests) do
+  def handle_info({:web_requests, web_requests}, socket) do
+    web_requests = parse(web_requests)
+    socket = assign(socket, :web_requests, web_requests)
+    {:noreply, socket}
+  end
+
+  defp parse(web_requests) do
     web_requests
-    |> Enum.map(fn {%{"http_verb" => http_verb, "request_path" => request_path}, count} ->
-      %{http_verb: http_verb, request_path: request_path, count: count}
+    |> Enum.map(fn {%{"http_method" => http_method, "path" => path}, count} ->
+      %{http_method: http_method, path: path, count: count}
     end)
-    |> Enum.sort_by(& &1.http_verb, :asc)
-    |> Enum.sort_by(& &1.request_path, :asc)
+    |> Enum.sort_by(& &1.http_method, :asc)
+    |> Enum.sort_by(& &1.path, :asc)
     |> Enum.sort_by(& &1.count, :desc)
   end
 end

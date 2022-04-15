@@ -8,6 +8,8 @@ defmodule Dave.Repo.Migrations.CreateIncomingWebRequestsTable do
       timestamps(type: :timestamptz)
     end
 
+    create unique_index(:incoming_web_requests, [:http_method, :path])
+
     create table(:incoming_web_request_incidents) do
       add :incoming_web_request_id,
           references(:incoming_web_requests, on_delete: :delete_all),

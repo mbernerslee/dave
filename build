@@ -1,6 +1,17 @@
 #!/bin/bash
 set -e
 
+find_todos() {
+  find_result=$(git grep TODO -- './*' ':!build' ':!.credo.exs')
+  result=$?
+  if [ $result -eq 0 ]; then
+    echo "TODO found in:"
+    echo "$find_result" | while read -r res; do echo " - $res"; done
+    exit 1
+  fi
+}
+
+find_todos
 mix test
 MIX_ENV=prod mix release prod --overwrite --force
 

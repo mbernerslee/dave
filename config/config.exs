@@ -14,6 +14,7 @@ config :dave, :web_server_log_file, location: "./log_file"
 # Configures the endpoint
 config :dave, DaveWeb.Endpoint,
   url: [host: System.get_env("APP_HOST", "localhost")],
+  force_ssl: [host: nil],
   render_errors: [view: DaveWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Dave.PubSub,
   live_view: [signing_salt: "2NgPOBGN"]

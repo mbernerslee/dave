@@ -10,6 +10,11 @@ defmodule DaveWeb.Endpoint do
     signing_salt: "9Gc9azOg"
   ]
 
+  # forces Plug.SSL to use the options as defined in config.exs under Endpoint force_ssl
+  @ssl_options :dave
+               |> Application.compile_env(DaveWeb.Endpoint)
+               |> Keyword.fetch!(:force_ssl)
+
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
@@ -31,6 +36,8 @@ defmodule DaveWeb.Endpoint do
     plug Phoenix.Ecto.CheckRepoStatus, otp_app: :dave
   end
 
+  plug DaveWeb.Plugs.IncomingWebRequestLogger
+
   plug Phoenix.LiveDashboard.RequestLogger,
     param_key: "request_logger",
     cookie_key: "request_logger"
@@ -45,10 +52,7 @@ defmodule DaveWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
-  # plug DaveWeb.Plugs.Inspector
-  # Plug SSL redirects me to example.com in MIX_ENV=test !!
-  plug Plug.SSL
-  plug DaveWeb.Plugs.Inspector
+  plug Plug.SSL, @ssl_options
   plug Plug.Session, @session_options
   plug DaveWeb.Router
 end

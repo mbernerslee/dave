@@ -1,5 +1,5 @@
 defmodule Dave.Application do
-  alias Dave.WebServerLogReader
+  alias Dave.IncomingWebRequestHandler
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -12,8 +12,9 @@ defmodule Dave.Application do
       DaveWeb.Telemetry,
       {Phoenix.PubSub, name: Dave.PubSub},
       DaveWeb.Endpoint,
-      WebServerLogReader.child_spec(),
-      Dave.Repo
+      Dave.Repo,
+      # TODO rename stuff to shorter names... e.g. don't say incoming all the time etc etc
+      IncomingWebRequestHandler.child_spec()
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

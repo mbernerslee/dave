@@ -37,13 +37,13 @@
       <%= @web_requests |> Enum.map(&(&1.count)) |> Enum.sum() %> (total)
     </td>
   </tr>
-  <%= for %{http_verb: http_verb, request_path: request_path, count: count} <- @web_requests do %>
+  <%= for %{http_method: http_method, path: path, count: count} <- @web_requests do %>
   <tr>
     <td>
-      <%= http_verb %>
+      <%= http_method %>
     </td>
     <td>
-      <%= request_path %>
+      <%= path %>
     </td>
     <td>
       <%= count %>
