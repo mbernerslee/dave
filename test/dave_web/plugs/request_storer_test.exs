@@ -53,6 +53,6 @@ defmodule DaveWeb.Plugs.RequestStorerTest do
   end
 
   defp arbitrary_existant_path do
-    Routes.web_server_statistics_path(Endpoint, :show)
+    Routes.request_statistics_path(Endpoint, :show)
   end
 end

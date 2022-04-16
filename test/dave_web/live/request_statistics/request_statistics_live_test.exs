@@ -1,4 +1,4 @@
-defmodule DaveWeb.WebServerStatisticsLiveTest do
+defmodule DaveWeb.RequestStatisticsLiveTest do
   use DaveWeb.ConnCase, async: false
   import Phoenix.LiveViewTest
 
@@ -11,14 +11,14 @@ defmodule DaveWeb.WebServerStatisticsLiveTest do
 
   alias Dave.Support.DateTimeUtils
 
-  alias DaveWeb.{Endpoint, WebServerStatisticsLive}
+  alias DaveWeb.{Endpoint, RequestStatisticsLive}
 
   test "can render the page", %{conn: conn} do
     assert {:ok, _view, _html} = live(conn, path())
   end
 
   test "total/1 - counts the total properly" do
-    assert WebServerStatisticsLive.total([
+    assert RequestStatisticsLive.total([
              %{http_method: "x", path: "x", timestamps: [1, 2, nil]},
              %{http_method: "y", path: "y", timestamps: [4, 5]},
              %{http_method: "z", path: "z", timestamps: [6]}
@@ -117,7 +117,7 @@ defmodule DaveWeb.WebServerStatisticsLiveTest do
       one_min: 0
     }
 
-    filters = WebServerStatisticsLive.filters()
+    filters = RequestStatisticsLive.filters()
 
     Enum.each(filters, fn {filter_name, %{seconds: seconds}} ->
       expected_count = expected_counts[filter_name]
@@ -155,7 +155,7 @@ defmodule DaveWeb.WebServerStatisticsLiveTest do
       one_min: 0
     }
 
-    filters = WebServerStatisticsLive.filters()
+    filters = RequestStatisticsLive.filters()
 
     Enum.each(filters, fn {filter_name, %{seconds: seconds}} ->
       expected_count = expected_counts[filter_name]
@@ -179,6 +179,6 @@ defmodule DaveWeb.WebServerStatisticsLiveTest do
   end
 
   defp path do
-    Routes.web_server_statistics_path(Endpoint, :show)
+    Routes.request_statistics_path(Endpoint, :show)
   end
 end

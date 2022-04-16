@@ -1,4 +1,4 @@
-defmodule DaveWeb.WebServerStatisticsLive do
+defmodule DaveWeb.RequestStatisticsLive do
   use DaveWeb, :live_view
   alias Dave.RequestStoreServer
   alias Dave.RequestPubSub
