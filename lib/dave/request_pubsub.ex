@@ -1,4 +1,4 @@
-defmodule Dave.IncomingWebRequestPubSub do
+defmodule Dave.RequestPubSub do
   alias Phoenix.PubSub
   alias Dave.Constants
 

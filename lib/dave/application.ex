@@ -1,5 +1,5 @@
 defmodule Dave.Application do
-  alias Dave.IncomingWebRequestHandler
+  alias Dave.RequestStoreServer
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -13,7 +13,7 @@ defmodule Dave.Application do
       {Phoenix.PubSub, name: Dave.PubSub},
       DaveWeb.Endpoint,
       Dave.Repo,
-      IncomingWebRequestHandler.child_spec()
+      RequestStoreServer.child_spec()
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

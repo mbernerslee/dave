@@ -1,16 +1,16 @@
-defmodule Dave.IncomingWebRequestLoggerTest do
+defmodule Dave.RequestPersisterTest do
   use Dave.DataCase, async: true
   import ExUnit.CaptureLog
 
   alias Dave.{
     Constants,
-    IncomingWebRequestLogger,
+    RequestPersister,
     IncomingWebRequestBuilder
   }
 
   alias Dave.Support.DBQueries
 
-  describe "log/2" do
+  describe "save_in_db/2" do
     test "given a new path & method, stores them in the db & returns them in an ok tuple" do
       http_method = Constants.http_method_get()
       path = IncomingWebRequestBuilder.unique_path()
@@ -18,7 +18,7 @@ defmodule Dave.IncomingWebRequestLoggerTest do
       assert DBQueries.all_paths_and_methods_with_counts() == []
 
       assert {:ok, %{http_method: http_method, path: path}} ==
-               IncomingWebRequestLogger.log(path, http_method)
+               RequestPersister.save_in_db(path, http_method)
 
       assert DBQueries.all_paths_and_methods_with_counts() == [{path, http_method, 1}]
     end
@@ -29,7 +29,7 @@ defmodule Dave.IncomingWebRequestLoggerTest do
         |> IncomingWebRequestBuilder.insert(returning: [:path, :http_method])
 
       assert DBQueries.all_paths_and_methods_with_counts() == [{path, http_method, 1}]
-      assert {:ok, _} = IncomingWebRequestLogger.log(path, http_method)
+      assert {:ok, _} = RequestPersister.save_in_db(path, http_method)
       assert DBQueries.all_paths_and_methods_with_counts() == [{path, http_method, 2}]
     end
 
@@ -39,7 +39,7 @@ defmodule Dave.IncomingWebRequestLoggerTest do
 
       logging =
         capture_log(fn ->
-          assert :error == IncomingWebRequestLogger.log(path, http_method)
+          assert :error == RequestPersister.save_in_db(path, http_method)
         end)
 
       assert Regex.match?(

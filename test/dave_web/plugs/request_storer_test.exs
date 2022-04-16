@@ -1,21 +1,21 @@
-defmodule DaveWeb.Plugs.IncomingWebRequestLoggerTest do
+defmodule DaveWeb.Plugs.RequestStorerTest do
   use DaveWeb.ConnCase, async: false
   import Ecto.Query
-  alias Dave.{Constants, IncomingWebRequestHandler, Repo}
+  alias Dave.{Constants, RequestStoreServer, Repo}
   alias DaveWeb.Endpoint
-  alias DaveWeb.Plugs.IncomingWebRequestLogger
+  alias DaveWeb.Plugs.RequestStorer
 
   @get Constants.http_method_get()
 
-  test "informs the IncomingWebRequestHandler of the request", %{conn: conn} do
-    {:ok, pid} = IncomingWebRequestHandler.start_link([])
+  test "informs the RequestStoreServer of the request", %{conn: conn} do
+    {:ok, pid} = RequestStoreServer.start_link([])
 
     assert :sys.get_state(pid) == %{}
 
     path = arbitrary_existant_path()
     conn = %{conn | request_path: path, method: @get}
 
-    IncomingWebRequestLogger.call(conn, pid)
+    RequestStorer.call(conn, pid)
 
     assert %{
              %{"http_method" => @get, "path" => ^path} => [_]

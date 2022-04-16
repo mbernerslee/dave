@@ -1,10 +1,9 @@
-defmodule Dave.IncomingWebRequestHandler do
+defmodule Dave.RequestStoreServer do
   use GenServer
   import Ecto.Query
-  alias Dave.{Constants, Repo, IncomingWebRequestLogger}
-  alias Dave.IncomingWebRequestPubSub
+  alias Dave.{Repo, RequestPersister}
+  alias Dave.RequestPubSub
 
-  @pubsub_topic Constants.pubsub_web_requests_topic()
   @name :incoming_web_request_handler
   @default_options [name: @name]
 
@@ -33,7 +32,7 @@ defmodule Dave.IncomingWebRequestHandler do
   def init(_init_arg = nil) do
     web_requests = all_web_requests_from_db()
 
-    IncomingWebRequestPubSub.broadcast(web_requests)
+    RequestPubSub.broadcast(web_requests)
     {:ok, web_requests}
   end
 
@@ -44,7 +43,7 @@ defmodule Dave.IncomingWebRequestHandler do
 
   @impl true
   def handle_cast({:new_request, path, http_method}, web_requests) do
-    case IncomingWebRequestLogger.log(path, http_method) do
+    case RequestPersister.save_in_db(path, http_method) do
       {:ok, %{path: path, http_method: http_method}} ->
         now = DateTime.utc_now()
 
@@ -56,7 +55,7 @@ defmodule Dave.IncomingWebRequestHandler do
             fn timestamps -> [now | timestamps] end
           )
 
-        IncomingWebRequestPubSub.broadcast(web_requests)
+        RequestPubSub.broadcast(web_requests)
 
         {:noreply, web_requests}
 

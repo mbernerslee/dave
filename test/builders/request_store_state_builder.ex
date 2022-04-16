@@ -1,12 +1,12 @@
-defmodule Dave.IncomingWebRequestHandlerStateBuilder do
+defmodule Dave.RequestStoreStateBuilder do
   alias Dave.{Constants, IncomingWebRequestBuilder}
 
   @moduledoc """
   build individual requests wtih build_request, with_path & with_http_method
-  then call build() |> add_request(the_request_you_made_with_the_above_functions)
+  then call build_store() |> add_request(the_request_you_made_with_the_above_functions)
   """
 
-  def build do
+  def build_store do
     %{}
   end
 

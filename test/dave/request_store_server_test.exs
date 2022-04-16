@@ -1,4 +1,4 @@
-defmodule Dave.IncomingWebRequestHandlerTest do
+defmodule Dave.RequestStoreServerTest do
   use Dave.DataCase, async: false
   # has to be async: false, because how how test-spawned PIDs sharing a database connection works
   # doesn't "have to be", but alternatives seemed nasty at the time
@@ -7,7 +7,7 @@ defmodule Dave.IncomingWebRequestHandlerTest do
 
   alias Dave.{
     Constants,
-    IncomingWebRequestHandler,
+    RequestStoreServer,
     IncomingWebRequestBuilder,
     IncomingWebRequestIncidentBuilder
   }
@@ -69,7 +69,7 @@ defmodule Dave.IncomingWebRequestHandlerTest do
       |> IncomingWebRequestIncidentBuilder.without_timestamps()
       |> IncomingWebRequestIncidentBuilder.insert()
 
-      {:ok, pid} = IncomingWebRequestHandler.start_link([])
+      {:ok, pid} = RequestStoreServer.start_link([])
 
       assert %{
                %{"http_method" => ^http_method_1, "path" => ^path_1} => [
@@ -96,7 +96,7 @@ defmodule Dave.IncomingWebRequestHandlerTest do
 
       PubSub.subscribe(Dave.PubSub, @pubsub_topic)
 
-      {:ok, _} = IncomingWebRequestHandler.start_link([])
+      {:ok, _} = RequestStoreServer.start_link([])
 
       assert_received {:web_requests, %{%{"http_method" => ^http_method, "path" => ^path} => [_]}}
     end
@@ -112,12 +112,12 @@ defmodule Dave.IncomingWebRequestHandlerTest do
         IncomingWebRequestBuilder.build()
         |> IncomingWebRequestBuilder.insert(returning: [:path, :http_method])
 
-      {:ok, pid} = IncomingWebRequestHandler.start_link([])
+      {:ok, pid} = RequestStoreServer.start_link([])
 
       assert %{
                %{"http_method" => ^http_method_1, "path" => ^path_1} => [_],
                %{"http_method" => ^http_method_2, "path" => ^path_2} => [_]
-             } = IncomingWebRequestHandler.read(pid)
+             } = RequestStoreServer.read(pid)
     end
   end
 
@@ -130,9 +130,9 @@ defmodule Dave.IncomingWebRequestHandlerTest do
       new_path = IncomingWebRequestBuilder.unique_path()
       new_http_method = Constants.http_method_get()
 
-      {:ok, pid} = IncomingWebRequestHandler.start_link([])
+      {:ok, pid} = RequestStoreServer.start_link([])
 
-      assert IncomingWebRequestHandler.handle_request(pid, new_path, new_http_method) == :ok
+      assert RequestStoreServer.handle_request(pid, new_path, new_http_method) == :ok
 
       assert %{
                %{"http_method" => ^http_method_1, "path" => ^path_1} => [_],
@@ -145,27 +145,27 @@ defmodule Dave.IncomingWebRequestHandlerTest do
         IncomingWebRequestBuilder.build()
         |> IncomingWebRequestBuilder.insert(returning: [:path, :http_method])
 
-      {:ok, pid} = IncomingWebRequestHandler.start_link([])
+      {:ok, pid} = RequestStoreServer.start_link([])
 
-      assert IncomingWebRequestHandler.handle_request(pid, path, http_method) == :ok
+      assert RequestStoreServer.handle_request(pid, path, http_method) == :ok
 
       assert %{%{"http_method" => ^http_method, "path" => ^path} => [_, _]} = :sys.get_state(pid)
 
-      assert IncomingWebRequestHandler.handle_request(pid, path, http_method) == :ok
+      assert RequestStoreServer.handle_request(pid, path, http_method) == :ok
 
       assert %{%{"http_method" => ^http_method, "path" => ^path} => [_, _, _]} =
                :sys.get_state(pid)
     end
 
     test "broadcasts the updated web_requests" do
-      {:ok, pid} = IncomingWebRequestHandler.start_link([])
+      {:ok, pid} = RequestStoreServer.start_link([])
 
       path = IncomingWebRequestBuilder.unique_path()
       http_method = Constants.http_method_get()
 
       PubSub.subscribe(Dave.PubSub, @pubsub_topic)
 
-      assert IncomingWebRequestHandler.handle_request(pid, path, http_method) == :ok
+      assert RequestStoreServer.handle_request(pid, path, http_method) == :ok
 
       assert_receive {:web_requests, %{%{"http_method" => ^http_method, "path" => ^path} => [_]}}
     end

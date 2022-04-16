@@ -5,8 +5,8 @@ defmodule DaveWeb.WebServerStatisticsLiveTest do
   alias Dave.{
     Constants,
     IncomingWebRequestBuilder,
-    IncomingWebRequestHandlerStateBuilder,
-    IncomingWebRequestPubSub
+    RequestStoreStateBuilder,
+    RequestPubSub
   }
 
   alias Dave.Support.DateTimeUtils
@@ -38,15 +38,15 @@ defmodule DaveWeb.WebServerStatisticsLiveTest do
            |> Kernel.=~(path)
 
     request =
-      IncomingWebRequestHandlerStateBuilder.build_request()
-      |> IncomingWebRequestHandlerStateBuilder.with_path(path)
-      |> IncomingWebRequestHandlerStateBuilder.with_http_method(http_method)
+      RequestStoreStateBuilder.build_request()
+      |> RequestStoreStateBuilder.with_path(path)
+      |> RequestStoreStateBuilder.with_http_method(http_method)
 
     web_requests =
-      IncomingWebRequestHandlerStateBuilder.build()
-      |> IncomingWebRequestHandlerStateBuilder.add_request(request)
+      RequestStoreStateBuilder.build_store()
+      |> RequestStoreStateBuilder.add_request(request)
 
-    IncomingWebRequestPubSub.broadcast(web_requests)
+    RequestPubSub.broadcast(web_requests)
 
     assert view
            |> render()
@@ -75,36 +75,36 @@ defmodule DaveWeb.WebServerStatisticsLiveTest do
     very_recent = DateTimeUtils.time_ago(:miniutes, 15)
 
     ancient_request =
-      IncomingWebRequestHandlerStateBuilder.build_request()
-      |> IncomingWebRequestHandlerStateBuilder.with_incident_timestamp(ancient)
+      RequestStoreStateBuilder.build_request()
+      |> RequestStoreStateBuilder.with_incident_timestamp(ancient)
 
     older_request =
-      IncomingWebRequestHandlerStateBuilder.build_request()
-      |> IncomingWebRequestHandlerStateBuilder.with_incident_timestamp(older)
+      RequestStoreStateBuilder.build_request()
+      |> RequestStoreStateBuilder.with_incident_timestamp(older)
 
     old_request =
-      IncomingWebRequestHandlerStateBuilder.build_request()
-      |> IncomingWebRequestHandlerStateBuilder.with_incident_timestamp(old)
+      RequestStoreStateBuilder.build_request()
+      |> RequestStoreStateBuilder.with_incident_timestamp(old)
 
     recent_request =
-      IncomingWebRequestHandlerStateBuilder.build_request()
-      |> IncomingWebRequestHandlerStateBuilder.with_incident_timestamp(recent)
+      RequestStoreStateBuilder.build_request()
+      |> RequestStoreStateBuilder.with_incident_timestamp(recent)
 
     very_recent_request =
-      IncomingWebRequestHandlerStateBuilder.build_request()
-      |> IncomingWebRequestHandlerStateBuilder.with_incident_timestamp(very_recent)
+      RequestStoreStateBuilder.build_request()
+      |> RequestStoreStateBuilder.with_incident_timestamp(very_recent)
 
     web_requests =
-      IncomingWebRequestHandlerStateBuilder.build()
-      |> IncomingWebRequestHandlerStateBuilder.add_request(ancient_request)
-      |> IncomingWebRequestHandlerStateBuilder.add_request(older_request)
-      |> IncomingWebRequestHandlerStateBuilder.add_request(old_request)
-      |> IncomingWebRequestHandlerStateBuilder.add_request(recent_request)
-      |> IncomingWebRequestHandlerStateBuilder.add_request(very_recent_request)
+      RequestStoreStateBuilder.build_store()
+      |> RequestStoreStateBuilder.add_request(ancient_request)
+      |> RequestStoreStateBuilder.add_request(older_request)
+      |> RequestStoreStateBuilder.add_request(old_request)
+      |> RequestStoreStateBuilder.add_request(recent_request)
+      |> RequestStoreStateBuilder.add_request(very_recent_request)
 
     {:ok, view, _html} = live(conn, path())
 
-    IncomingWebRequestPubSub.broadcast(web_requests)
+    RequestPubSub.broadcast(web_requests)
 
     assert rendered_total(view) == 5
 
@@ -133,16 +133,16 @@ defmodule DaveWeb.WebServerStatisticsLiveTest do
 
   test "only the all_time filter shows requests without a timestamp", %{conn: conn} do
     request =
-      IncomingWebRequestHandlerStateBuilder.build_request()
-      |> IncomingWebRequestHandlerStateBuilder.with_incident_timestamp(nil)
+      RequestStoreStateBuilder.build_request()
+      |> RequestStoreStateBuilder.with_incident_timestamp(nil)
 
     web_requests =
-      IncomingWebRequestHandlerStateBuilder.build()
-      |> IncomingWebRequestHandlerStateBuilder.add_request(request)
+      RequestStoreStateBuilder.build_store()
+      |> RequestStoreStateBuilder.add_request(request)
 
     {:ok, view, _html} = live(conn, path())
 
-    IncomingWebRequestPubSub.broadcast(web_requests)
+    RequestPubSub.broadcast(web_requests)
 
     assert rendered_total(view) == 1
 

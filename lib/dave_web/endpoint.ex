@@ -36,7 +36,7 @@ defmodule DaveWeb.Endpoint do
     plug Phoenix.Ecto.CheckRepoStatus, otp_app: :dave
   end
 
-  plug DaveWeb.Plugs.IncomingWebRequestLogger
+  plug DaveWeb.Plugs.RequestStorer
 
   plug Phoenix.LiveDashboard.RequestLogger,
     param_key: "request_logger",

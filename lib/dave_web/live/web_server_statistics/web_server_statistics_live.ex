@@ -1,7 +1,7 @@
 defmodule DaveWeb.WebServerStatisticsLive do
   use DaveWeb, :live_view
-  alias Dave.IncomingWebRequestHandler
-  alias Dave.IncomingWebRequestPubSub
+  alias Dave.RequestStoreServer
+  alias Dave.RequestPubSub
 
   @all_time "all_time"
   @all_time_atom String.to_atom(@all_time)
@@ -16,10 +16,10 @@ defmodule DaveWeb.WebServerStatisticsLive do
 
   def mount(_, _, socket) do
     if connected?(socket) do
-      IncomingWebRequestPubSub.subscribe()
+      RequestPubSub.subscribe()
     end
 
-    web_requests = parse_web_requests(IncomingWebRequestHandler.read())
+    web_requests = parse_web_requests(RequestStoreServer.read())
 
     socket =
       socket

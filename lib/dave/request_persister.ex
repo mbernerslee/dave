@@ -1,9 +1,9 @@
-defmodule Dave.IncomingWebRequestLogger do
+defmodule Dave.RequestPersister do
   require Logger
   import Ecto.Query
   alias Dave.Repo
 
-  def log(path, http_method) do
+  def save_in_db(path, http_method) do
     case validate_path(path) do
       {:ok, path} -> perform_database_updates(path, http_method)
       :error -> :error
