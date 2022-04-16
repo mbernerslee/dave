@@ -5,19 +5,21 @@ defmodule DaveWeb.Plugs.IncomingWebRequestLoggerTest do
   alias DaveWeb.Endpoint
   alias DaveWeb.Plugs.IncomingWebRequestLogger
 
+  @get Constants.http_method_get()
+
   test "informs the IncomingWebRequestHandler of the request", %{conn: conn} do
     {:ok, pid} = IncomingWebRequestHandler.start_link([])
 
     assert :sys.get_state(pid) == %{}
 
     path = arbitrary_existant_path()
-    conn = %{conn | request_path: path, method: Constants.http_method_get()}
+    conn = %{conn | request_path: path, method: @get}
 
     IncomingWebRequestLogger.call(conn, pid)
 
-    assert :sys.get_state(pid) == %{
-             %{"http_method" => Constants.http_method_get(), "path" => path} => 1
-           }
+    assert %{
+             %{"http_method" => @get, "path" => ^path} => [_]
+           } = :sys.get_state(pid)
   end
 
   test "hitting an arbitrary existant path, stores it in the database", %{conn: conn} do

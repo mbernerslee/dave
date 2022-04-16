@@ -1,4 +1,4 @@
-<h1>Hey Dude</h1>
+<h1>Hello there</h1>
 <p>
   This is a really simple website. The only legitimate route that exists on it is '/'.
 </p>
@@ -16,6 +16,15 @@
 <p>
   Below we have a list of all the requests ever. Check out all of the evil that the internet has tried to do...
 </p>
+<div>
+  <div>
+    <strong>Filters</strong>
+  </div>
+  <%= for %{name: name, text: text, seconds: seconds} <- filters() do %>
+    <% active = if name == @active_filter, do: "true", else: "false" %>
+    <button {[phx_click: name, active: active, value: seconds]}><%= text %></button>
+  <% end %>
+</div>
 <table>
   <th>
     HTTP Method
@@ -33,11 +42,12 @@
     <td>
       -
     </td>
-    <td>
-      <%= @web_requests |> Enum.map(&(&1.count)) |> Enum.sum() %> (total)
+    <% total = total(@filtered_web_requests) %>
+    <td {[id: "total", value: total]} >
+      <%= total %> (total)
     </td>
   </tr>
-  <%= for %{http_method: http_method, path: path, count: count} <- @web_requests do %>
+  <%= for %{http_method: http_method, path: path, timestamps: timestamps} <- @filtered_web_requests do %>
   <tr>
     <td>
       <%= http_method %>
@@ -46,7 +56,7 @@
       <%= path %>
     </td>
     <td>
-      <%= count %>
+      <%= length(timestamps) %>
     </td>
   </tr>
   <% end %>

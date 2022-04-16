@@ -46,10 +46,15 @@ defmodule Dave.IncomingWebRequestHandler do
   def handle_cast({:new_request, path, http_method}, web_requests) do
     case IncomingWebRequestLogger.log(path, http_method) do
       {:ok, %{path: path, http_method: http_method}} ->
+        now = DateTime.utc_now()
+
         web_requests =
-          Map.update(web_requests, %{"http_method" => http_method, "path" => path}, 1, fn count ->
-            count + 1
-          end)
+          Map.update(
+            web_requests,
+            %{"http_method" => http_method, "path" => path},
+            [now],
+            fn timestamps -> [now | timestamps] end
+          )
 
         IncomingWebRequestPubSub.broadcast(web_requests)
 
@@ -65,9 +70,18 @@ defmodule Dave.IncomingWebRequestHandler do
       from i in "incoming_web_requests",
         inner_join: ii in "incoming_web_request_incidents",
         on: ii.incoming_web_request_id == i.id,
-        select: {%{"http_method" => i.http_method, "path" => i.path}, count(ii.id)},
+        select:
+          {%{"http_method" => i.http_method, "path" => i.path},
+           fragment("array_agg(? order by ? DESC)", ii.inserted_at, ii.inserted_at)},
         group_by: [i.http_method, i.path]
     )
+    |> Enum.map(fn {request, timestamps} ->
+      {request,
+       Enum.map(timestamps, fn
+         nil -> nil
+         timestamp -> DateTime.from_naive!(timestamp, "Etc/UTC")
+       end)}
+    end)
     |> Map.new()
   end
 end

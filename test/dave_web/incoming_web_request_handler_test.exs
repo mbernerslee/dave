@@ -12,28 +12,81 @@ defmodule Dave.IncomingWebRequestHandlerTest do
     IncomingWebRequestIncidentBuilder
   }
 
+  alias Dave.Support.DateTimeUtils
+
   @pubsub_topic Constants.pubsub_web_requests_topic()
 
   describe "start_link/1" do
     test "on startup, loads the current web requests from the DB into memory" do
-      %{path: path_1, http_method: http_method_1} =
+      %{path: path_1, http_method: http_method_1, id: incoming_web_request_id_1} =
         IncomingWebRequestBuilder.build()
-        |> IncomingWebRequestBuilder.insert(returning: [:path, :http_method])
+        |> IncomingWebRequestBuilder.insert(
+          insert_incident: false,
+          returning: [:path, :http_method]
+        )
 
       %{path: path_2, http_method: http_method_2, id: incoming_web_request_id_2} =
         IncomingWebRequestBuilder.build()
-        |> IncomingWebRequestBuilder.insert(returning: [:path, :http_method])
+        |> IncomingWebRequestBuilder.insert(
+          insert_incident: false,
+          returning: [:path, :http_method]
+        )
+
+      %{path: path_3, http_method: http_method_3, id: incoming_web_request_id_3} =
+        IncomingWebRequestBuilder.build()
+        |> IncomingWebRequestBuilder.insert(
+          insert_incident: false,
+          returning: [:path, :http_method]
+        )
+
+      now = %{DateTime.utc_now() | microsecond: {0, 0}}
+      before = %{DateTime.add(now, -10_000) | microsecond: {0, 0}}
+      long_ago = %{DateTime.add(now, -100_000) | microsecond: {0, 0}}
+      ancient = %{DateTime.add(now, -1_000_000) | microsecond: {0, 0}}
+
+      IncomingWebRequestIncidentBuilder.build()
+      |> IncomingWebRequestIncidentBuilder.with_incoming_web_request_id(incoming_web_request_id_1)
+      |> IncomingWebRequestIncidentBuilder.with_timestamps(ancient)
+      |> IncomingWebRequestIncidentBuilder.insert()
+
+      IncomingWebRequestIncidentBuilder.build()
+      |> IncomingWebRequestIncidentBuilder.with_incoming_web_request_id(incoming_web_request_id_1)
+      |> IncomingWebRequestIncidentBuilder.with_timestamps(long_ago)
+      |> IncomingWebRequestIncidentBuilder.insert()
 
       IncomingWebRequestIncidentBuilder.build()
       |> IncomingWebRequestIncidentBuilder.with_incoming_web_request_id(incoming_web_request_id_2)
+      |> IncomingWebRequestIncidentBuilder.with_timestamps(before)
+      |> IncomingWebRequestIncidentBuilder.insert()
+
+      IncomingWebRequestIncidentBuilder.build()
+      |> IncomingWebRequestIncidentBuilder.with_incoming_web_request_id(incoming_web_request_id_2)
+      |> IncomingWebRequestIncidentBuilder.with_timestamps(now)
+      |> IncomingWebRequestIncidentBuilder.insert()
+
+      IncomingWebRequestIncidentBuilder.build()
+      |> IncomingWebRequestIncidentBuilder.with_incoming_web_request_id(incoming_web_request_id_3)
+      |> IncomingWebRequestIncidentBuilder.without_timestamps()
       |> IncomingWebRequestIncidentBuilder.insert()
 
       {:ok, pid} = IncomingWebRequestHandler.start_link([])
 
       assert %{
-               %{"http_method" => http_method_1, "path" => path_1} => 1,
-               %{"http_method" => http_method_2, "path" => path_2} => 2
-             } == :sys.get_state(pid)
+               %{"http_method" => ^http_method_1, "path" => ^path_1} => [
+                 actual_long_ago,
+                 actual_ancient
+               ],
+               %{"http_method" => ^http_method_2, "path" => ^path_2} => [
+                 actual_now,
+                 actual_before
+               ],
+               %{"http_method" => ^http_method_3, "path" => ^path_3} => [nil]
+             } = :sys.get_state(pid)
+
+      assert DateTimeUtils.within_a_second?(actual_long_ago, long_ago)
+      assert DateTimeUtils.within_a_second?(actual_ancient, ancient)
+      assert DateTimeUtils.within_a_second?(actual_now, now)
+      assert DateTimeUtils.within_a_second?(actual_before, before)
     end
 
     test "broadcasts the web_requests" do
@@ -45,7 +98,7 @@ defmodule Dave.IncomingWebRequestHandlerTest do
 
       {:ok, _} = IncomingWebRequestHandler.start_link([])
 
-      assert_received {:web_requests, %{%{"http_method" => ^http_method, "path" => ^path} => 1}}
+      assert_received {:web_requests, %{%{"http_method" => ^http_method, "path" => ^path} => [_]}}
     end
   end
 
@@ -62,9 +115,9 @@ defmodule Dave.IncomingWebRequestHandlerTest do
       {:ok, pid} = IncomingWebRequestHandler.start_link([])
 
       assert %{
-               %{"http_method" => http_method_1, "path" => path_1} => 1,
-               %{"http_method" => http_method_2, "path" => path_2} => 1
-             } == IncomingWebRequestHandler.read(pid)
+               %{"http_method" => ^http_method_1, "path" => ^path_1} => [_],
+               %{"http_method" => ^http_method_2, "path" => ^path_2} => [_]
+             } = IncomingWebRequestHandler.read(pid)
     end
   end
 
@@ -82,9 +135,9 @@ defmodule Dave.IncomingWebRequestHandlerTest do
       assert IncomingWebRequestHandler.handle_request(pid, new_path, new_http_method) == :ok
 
       assert %{
-               %{"http_method" => http_method_1, "path" => path_1} => 1,
-               %{"http_method" => new_http_method, "path" => new_path} => 1
-             } == :sys.get_state(pid)
+               %{"http_method" => ^http_method_1, "path" => ^path_1} => [_],
+               %{"http_method" => ^new_http_method, "path" => ^new_path} => [_]
+             } = :sys.get_state(pid)
     end
 
     test "given a previously seen request coming in again, updates the state" do
@@ -96,11 +149,12 @@ defmodule Dave.IncomingWebRequestHandlerTest do
 
       assert IncomingWebRequestHandler.handle_request(pid, path, http_method) == :ok
 
-      assert %{%{"http_method" => http_method, "path" => path} => 2} == :sys.get_state(pid)
+      assert %{%{"http_method" => ^http_method, "path" => ^path} => [_, _]} = :sys.get_state(pid)
 
       assert IncomingWebRequestHandler.handle_request(pid, path, http_method) == :ok
 
-      assert %{%{"http_method" => http_method, "path" => path} => 3} == :sys.get_state(pid)
+      assert %{%{"http_method" => ^http_method, "path" => ^path} => [_, _, _]} =
+               :sys.get_state(pid)
     end
 
     test "broadcasts the updated web_requests" do
@@ -113,7 +167,7 @@ defmodule Dave.IncomingWebRequestHandlerTest do
 
       assert IncomingWebRequestHandler.handle_request(pid, path, http_method) == :ok
 
-      assert_receive {:web_requests, %{%{"http_method" => ^http_method, "path" => ^path} => 1}}
+      assert_receive {:web_requests, %{%{"http_method" => ^http_method, "path" => ^path} => [_]}}
     end
   end
 end
