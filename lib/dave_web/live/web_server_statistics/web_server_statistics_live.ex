@@ -45,6 +45,7 @@ defmodule DaveWeb.WebServerStatisticsLive do
     {:noreply, socket}
   end
 
+  # TODO it actually needs to periodically update whats in the filter as time moves forward!
   def handle_event(@all_time_string, %{"value" => ""}, socket) do
     socket = assign(socket, :active_filter, @all_time)
     filter(socket, @all_time, nil)
