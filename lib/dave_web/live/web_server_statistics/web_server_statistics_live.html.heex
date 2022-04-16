@@ -20,9 +20,9 @@
   <div>
     <strong>Filters</strong>
   </div>
-  <%= for %{name: name, text: text, seconds: seconds} <- filters() do %>
+  <%= for {name, %{text: text, seconds: seconds}} <- filters() do %>
     <% active = if name == @active_filter, do: "true", else: "false" %>
-    <button {[phx_click: name, active: active, value: seconds]}><%= text %></button>
+    <button {[phx_click: :filter, active: active, value: seconds, phx_value_name: name]}><%= text %></button>
   <% end %>
 </div>
 <table>
