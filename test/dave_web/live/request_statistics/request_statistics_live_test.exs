@@ -114,18 +114,16 @@ defmodule DaveWeb.RequestStatisticsLiveTest do
       ten_days: 3,
       twenty_four_hours: 2,
       thirty_minutes: 1,
-      one_min: 0
+      one_min: 0,
+      three_seconds: 0
     }
 
     filters = RequestStatisticsLive.filters()
 
-    Enum.each(filters, fn {filter_name, %{seconds: seconds}} ->
+    Enum.each(filters, fn {filter_name, _} ->
       expected_count = expected_counts[filter_name]
 
-      render_click(view, :filter, %{
-        "value" => to_string(seconds),
-        "name" => to_string(filter_name)
-      })
+      render_click(view, :filter, %{"value" => to_string(filter_name)})
 
       assert rendered_total(view) == expected_count
     end)
@@ -152,18 +150,16 @@ defmodule DaveWeb.RequestStatisticsLiveTest do
       ten_days: 0,
       twenty_four_hours: 0,
       thirty_minutes: 0,
-      one_min: 0
+      one_min: 0,
+      three_seconds: 0
     }
 
     filters = RequestStatisticsLive.filters()
 
-    Enum.each(filters, fn {filter_name, %{seconds: seconds}} ->
+    Enum.each(filters, fn {filter_name, _} ->
       expected_count = expected_counts[filter_name]
 
-      render_click(view, :filter, %{
-        "value" => to_string(seconds),
-        "name" => to_string(filter_name)
-      })
+      render_click(view, :filter, %{"value" => to_string(filter_name)})
 
       assert rendered_total(view) == expected_count
     end)

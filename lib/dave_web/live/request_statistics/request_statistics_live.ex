@@ -11,8 +11,11 @@ defmodule DaveWeb.RequestStatisticsLive do
     {:ten_days, %{seconds: 864_000, text: "Last 10 days"}},
     {:twenty_four_hours, %{seconds: 86_400, text: "Last 24 hrs"}},
     {:thirty_minutes, %{seconds: 1_800, text: "Last 30 min"}},
-    {:one_min, %{seconds: 60, text: "Last 1 min"}}
+    {:one_min, %{seconds: 60, text: "Last 1 min"}},
+    {:three_seconds, %{seconds: 3, text: "Last 3 seconds"}}
   ]
+
+  @filters_map Map.new(@filters)
 
   def mount(_, _, socket) do
     if connected?(socket) do
@@ -27,7 +30,16 @@ defmodule DaveWeb.RequestStatisticsLive do
       |> assign(:filtered_web_requests, web_requests)
       |> assign(:active_filter, :all_time)
 
+    periodically_refresh_filters()
+
     {:ok, socket}
+  end
+
+  # TODO test the freshing of filters
+  def handle_cast(:refresh_filters, socket) do
+    socket = refresh_filters(socket)
+    periodically_refresh_filters()
+    {:noreply, socket}
   end
 
   def handle_info({:web_requests, web_requests}, socket) do
@@ -42,7 +54,7 @@ defmodule DaveWeb.RequestStatisticsLive do
     {:noreply, socket}
   end
 
-  def handle_event("filter", %{"value" => @all_time, "name" => @all_time}, socket) do
+  def handle_event("filter", %{"value" => @all_time}, socket) do
     web_requests = socket.assigns.web_requests
 
     socket =
@@ -53,36 +65,16 @@ defmodule DaveWeb.RequestStatisticsLive do
     {:noreply, socket}
   end
 
-  def handle_event("filter", %{"value" => seconds, "name" => filter_name}, socket) do
+  def handle_event("filter", %{"value" => filter_name}, socket) do
     filter_name = String.to_atom(filter_name)
-    seconds = String.to_integer(seconds)
-
-    now = DateTime.utc_now()
-    web_requests = socket.assigns.web_requests
-
-    filtered_web_requests =
-      Enum.map(web_requests, fn web_request ->
-        %{web_request | timestamps: filter_timestamps(web_request.timestamps, seconds, now)}
-      end)
+    # seconds = String.to_integer(seconds)
 
     socket =
       socket
       |> assign(:active_filter, filter_name)
-      |> assign(:filtered_web_requests, filtered_web_requests)
+      |> refresh_filters()
 
     {:noreply, socket}
-  end
-
-  # TODO it actually needs to periodically update whats in the filter as time moves forward!
-
-  defp filter_timestamps(timestamps, seconds_ago, now) do
-    Enum.filter(
-      timestamps,
-      fn
-        nil -> false
-        timestamp -> DateTime.diff(now, timestamp) < seconds_ago
-      end
-    )
   end
 
   def total(web_requests) do
@@ -93,6 +85,44 @@ defmodule DaveWeb.RequestStatisticsLive do
 
   def filters, do: @filters
   def all_time, do: @all_time
+
+  defp refresh_filters(socket) do
+    %{seconds: seconds} = Map.fetch!(@filters_map, socket.assigns.active_filter)
+    now = DateTime.utc_now()
+    web_requests = socket.assigns.web_requests
+
+    filtered_web_requests =
+      case seconds do
+        @all_time ->
+          web_requests
+
+        seconds ->
+          Enum.map(web_requests, fn web_request ->
+            %{web_request | timestamps: filter_timestamps(web_request.timestamps, seconds, now)}
+          end)
+      end
+
+    assign(socket, :filtered_web_requests, filtered_web_requests)
+  end
+
+  defp periodically_refresh_filters do
+    pid = self()
+
+    spawn_link(fn ->
+      :timer.sleep(2_000)
+      GenServer.cast(pid, :refresh_filters)
+    end)
+  end
+
+  defp filter_timestamps(timestamps, seconds_ago, now) do
+    Enum.filter(
+      timestamps,
+      fn
+        nil -> false
+        timestamp -> DateTime.diff(now, timestamp) < seconds_ago
+      end
+    )
+  end
 
   defp parse_web_requests(web_requests) do
     web_requests
