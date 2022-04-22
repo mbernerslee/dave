@@ -115,6 +115,7 @@ defmodule DaveWeb.RequestStatisticsLiveTest do
       twenty_four_hours: 2,
       thirty_minutes: 1,
       one_min: 0,
+      ten_seconds: 0,
       three_seconds: 0
     }
 
@@ -151,6 +152,7 @@ defmodule DaveWeb.RequestStatisticsLiveTest do
       twenty_four_hours: 0,
       thirty_minutes: 0,
       one_min: 0,
+      ten_seconds: 0,
       three_seconds: 0
     }
 

@@ -11,6 +11,7 @@ defmodule DaveWeb.RequestStatisticsLive do
     {:twenty_four_hours, %{seconds: 86_400, text: "Last 24 hrs"}},
     {:thirty_minutes, %{seconds: 1_800, text: "Last 30 min"}},
     {:one_min, %{seconds: 60, text: "Last 1 min"}},
+    {:ten_seconds, %{seconds: 10, text: "Last 10 seconds"}},
     {:three_seconds, %{seconds: 3, text: "Last 3 seconds"}}
   ]
 

@@ -16,3 +16,4 @@ tar -xvf release.tar
 
 sudo --preserve-env _build/prod/rel/prod/bin/prod eval "Dave.Release.migrate"
 sudo --preserve-env _build/prod/rel/prod/bin/prod start >> log_file 2>&1 &
+tail -Fn 30 log_file
