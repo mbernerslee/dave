@@ -1,7 +1,6 @@
 defmodule DaveWeb.RequestStatisticsLive do
   use DaveWeb, :live_view
-  alias Dave.RequestStoreServer
-  alias Dave.RequestPubSub
+  alias Dave.{RequestPubSub, RequestParser, RequestStoreServer}
 
   @all_time "all_time"
   @all_time_atom String.to_atom(@all_time)
@@ -35,7 +34,6 @@ defmodule DaveWeb.RequestStatisticsLive do
     {:ok, socket}
   end
 
-  # TODO test the freshing of filters
   def handle_cast(:refresh_filters, socket) do
     socket = refresh_filters(socket)
     periodically_refresh_filters()
@@ -43,13 +41,12 @@ defmodule DaveWeb.RequestStatisticsLive do
   end
 
   def handle_info({:web_requests, web_requests}, socket) do
-    # TODO filter web_requests as they come in too
     web_requests = parse_web_requests(web_requests)
 
     socket =
       socket
       |> assign(:web_requests, web_requests)
-      |> assign(:filtered_web_requests, web_requests)
+      |> refresh_filters()
 
     {:noreply, socket}
   end
@@ -67,7 +64,6 @@ defmodule DaveWeb.RequestStatisticsLive do
 
   def handle_event("filter", %{"value" => filter_name}, socket) do
     filter_name = String.to_atom(filter_name)
-    # seconds = String.to_integer(seconds)
 
     socket =
       socket
@@ -88,20 +84,8 @@ defmodule DaveWeb.RequestStatisticsLive do
 
   defp refresh_filters(socket) do
     %{seconds: seconds} = Map.fetch!(@filters_map, socket.assigns.active_filter)
-    now = DateTime.utc_now()
     web_requests = socket.assigns.web_requests
-
-    filtered_web_requests =
-      case seconds do
-        @all_time ->
-          web_requests
-
-        seconds ->
-          Enum.map(web_requests, fn web_request ->
-            %{web_request | timestamps: filter_timestamps(web_request.timestamps, seconds, now)}
-          end)
-      end
-
+    filtered_web_requests = RequestParser.filter(web_requests, seconds, DateTime.utc_now())
     assign(socket, :filtered_web_requests, filtered_web_requests)
   end
 
@@ -109,28 +93,14 @@ defmodule DaveWeb.RequestStatisticsLive do
     pid = self()
 
     spawn_link(fn ->
-      :timer.sleep(2_000)
+      :timer.sleep(1_000)
       GenServer.cast(pid, :refresh_filters)
     end)
   end
 
-  defp filter_timestamps(timestamps, seconds_ago, now) do
-    Enum.filter(
-      timestamps,
-      fn
-        nil -> false
-        timestamp -> DateTime.diff(now, timestamp) < seconds_ago
-      end
-    )
-  end
-
   defp parse_web_requests(web_requests) do
-    web_requests
-    |> Enum.map(fn {%{"http_method" => http_method, "path" => path}, timestamps} ->
+    Enum.map(web_requests, fn {%{"http_method" => http_method, "path" => path}, timestamps} ->
       %{http_method: http_method, path: path, timestamps: timestamps}
     end)
-    |> Enum.sort_by(& &1.http_method, :asc)
-    |> Enum.sort_by(& &1.path, :asc)
-    |> Enum.sort_by(&length(&1.timestamps), :desc)
   end
 end

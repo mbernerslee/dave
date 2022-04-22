@@ -20,6 +20,10 @@ defmodule Dave.Support.DateTimeUtils do
     DateTime.add(DateTime.utc_now(), -@minute_in_seconds * miniutes)
   end
 
+  def time_ago(:seconds, seconds) do
+    DateTime.add(DateTime.utc_now(), -seconds)
+  end
+
   defp modulus(diff) do
     if diff > 0 do
       diff
